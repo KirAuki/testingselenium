@@ -1,7 +1,6 @@
 const { Builder } = require('selenium-webdriver');
 const assert = require('assert');
-const TodoPage = require('../1.2.page');
-
+const TodoPage = require('../pages/1.2.page');
 const mocha = require('mocha');
 const { describe, it, before, after } = mocha;
 
@@ -11,16 +10,14 @@ describe('Todo Application Test', function() {
     const total = 5;
     let remaining = 5;
 
-    this.timeout(30000); 
-
     before(async function() {
         driver = await new Builder().forBrowser('chrome').build();
         todoPage = new TodoPage(driver);
-        await todoPage.open();
+        await todoPage.openHomepage();
     });
 
     after(async function() {
-        await driver.quit();
+        await todoPage.close();
     });
 
     it('should display correct initial remaining items text', async function() {
@@ -34,7 +31,8 @@ describe('Todo Application Test', function() {
             await todoPage.toggleItem(i);
             remaining--;
             assert.equal(await todoPage.getItemClass(i), "done-true");
-            await driver.sleep(1000); // Simulate wait time for UI update
+            let text = await todoPage.getRemainingItemsText();
+            assert.equal(text, todoPage.expectedRemainingItemsText(remaining, total));
         }
     });
 
